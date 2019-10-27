@@ -1,4 +1,4 @@
-#!/System/Index/Binaries/ash
+#!/bin/bash
 
 #Prevent kernel messages to console
 dmesg -n 1
