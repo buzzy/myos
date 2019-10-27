@@ -1,0 +1,42 @@
+#!/System/Index/Binaries/ash
+
+#Prevent kernel messages to console
+dmesg -n 1
+
+#Mount RAM drives
+mkdir -p /dev/pts
+mkdir -p /dev/shm
+mount -t devpts -o gid=4,mode=620 none /dev/pts
+mount -t tmpfs none /dev/shm
+
+#Set hostname
+hostname -F /etc/hostname
+
+#Empty temp and run dirs
+rm -rf /tmp/*
+rm -rf /var/run/*
+
+#Start system logger
+syslogd -O /var/log/syslog
+
+#Start kernel logger
+klogd
+
+#Mount proc and sys filesystems
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+#Print system log to tty10 (ALT+F10)
+tail -f /var/log/syslog > /dev/tty10 &
+
+#Load modules for auto-detected hardware
+grep -h MODALIAS /sys/bus/*/devices/*/uevent 2> /dev/null | cut -d= -f2 | sort -u | xargs modprobe -abq 2> /dev/null
+
+#Start cron daemon
+crond -c /etc/crond
+
+#Hide all legacy directories
+#gobohide -h /bin /boot /etc /lib /lib32 /lib64 /libexec /media /mnt /lost\+found /proc /sbin /share /sys /tmp /var /dev /usr /include
+
+#Start all network interfaces
+#ifup -a
